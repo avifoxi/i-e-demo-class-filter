@@ -1,12 +1,18 @@
 var MASTER = function () {
-	var _subjects = {},
-		_classes = {};
+	var _fullClasses = {}, // full json unparsed
+
+		// FILTERABLE BY
+		_subjects = [],
+		_grades = [],
+		_teachers = [],
+
+		// result of filter action 
+		_currentSubSet = {};
 		
 	init();
 	
 	this.CHEAT = function(){
-		console.log(_subjects);
-		console.log(_classes);
+		return _classes;
 	}
 
 	function init(){
@@ -15,9 +21,12 @@ var MASTER = function () {
 		});
 		$.getJSON('./data/classes.json', function(res){
 			_classes = res;
-			console.log(res);
+			parseTeachersGrades();
 		})
-	}
+	};
+	function parseTeachers(){
+		console.log('i parse teachers~')
+	};
 }
 
 
