@@ -1,64 +1,37 @@
 'use strict';
 
 var $ = require('jquery'),
-	classFilter = require('./utils/classFilter.js');
+	classFilter = require('./utils/classFilter.js'),
+	selectCtrl = require('./components/selectCtrl.js');
 
 var MASTER = function () {
 	var _fullClasses = {}, // full object unparsed
-
-		// FILTERABLE BY
-		_subjects = [],
-		_grades = [],
-		_teachers = {}, // obj for access by id
-
-		// for efficient class lookup - does not yet allow teachers w multiple classes though
-		_teacherClassMap = {},
-
-
+		_selectCtrl = {},
 		_filter = function(){
 		},
-		// result of f ilter action 
+		// result of filter action 
 		_currentSubSet = {};
 		
-	init();
 	
 	this.CHEAT = function(){
-		console.log(_fullClasses._embedded['class']);
-		console.log(_subjects);
-		console.log(_grades);
-		console.log(_teachers);
-		console.log(_teacherClassMap);
 		return _filter;
 	}
 
-	function init(){
+	this.init = function(){
 		$.getJSON('./data/subjects.json', function(res){
 			_subjects = res;
 		});
 		$.getJSON('./data/classes.json', function(res){
-			_fullClasses = res;
-			parseTeachersGrades();
-			_filter = new classFilter( _fullClasses, _teacherClassMap );
-		})
+			_fullClasses = res._embedded['class'];
+			_filter = new classFilter( _fullClasses, this );
+		}.bind(this));
 	};
-	function parseTeachersGrades(){
-		var classList = _fullClasses._embedded['class'];
-		
-		classList.forEach(function(klass){
-			var grade = klass.grade,
-				teacher = klass._embedded;
+	this.handleFilterables = function( filterables ){
+		console.log( filterables );
+	}
 
-			if ( _grades.indexOf( grade ) === -1 ){
-				_grades.push( grade );
-			}
-			if ( teacher ){
-				_teachers[ teacher.teacher[0].id ] = teacher.teacher;
-				_teacherClassMap[ teacher.teacher[0].id ] = klass.id;
-			}
-		});
-	};
-
+	this.init();
+	
 }
 
-window.classFilter = classFilter;
 window.MASTER = new MASTER();

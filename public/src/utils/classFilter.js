@@ -1,18 +1,51 @@
 'use strict';
 
-function classFilter ( classList, teacherClassMap ) {
-	var _classObj = classListToObj( classList._embedded['class'] ) ,
-		_teacherClassMap = teacherClassMap,
+function classFilter ( classList, MASTER ) {
+	var _classObj = {},
+		_teacherClassMap = {},
 		_gradeClassMap = {},
 		_subjectClassMap = {};
 
-	function classListToObj( classList ) {
-		var classObj = {};
-		classList.forEach(function( klass ){
-			classObj[ klass.id ] = klass;
+	parseListToMaps( classList );
+
+	function parseListToMaps( classList ){
+		// classListToObj( classList )
+		// var classList = _fullClasses._embedded['class'];
+		var filterables = {
+			subjects: [],
+			grades: [],
+			teachers: []
+		};
+		classList.forEach(function(klass){
+			var subject = klass.subject,
+				grade = klass.grade,
+				teacher = klass._embedded;
+
+			filterables.subjects.push( subject );
+			filterables.grades.push( grade );
+			// map to class obj by id
+			_classObj[ klass.id ] = klass;
+
+			// map by grade, array of class ids
+			if ( !_gradeClassMap[ grade ] ){
+				_gradeClassMap[ grade ] = [ klass.id ];
+			} else {
+				_gradeClassMap[ grade ].push( klass.id );
+			}
+			// map by teacher id
+			if ( teacher ){
+				filterables.teachers.push({[ teacher.teacher[0].id ]: teacher.teacher[0].name });
+				_teacherClassMap[ teacher.teacher[0].id ] = klass.id;
+			}
+			// and subject ids
+			if ( !_subjectClassMap[ subject ] ) {
+				_subjectClassMap[ subject ] = [ klass.id ];
+			} else {
+				_subjectClassMap[ subject ].push( klass.id );	
+			}
 		});
-		return classObj;
-	}
+		MASTER.handleFilterables( filterables ); 
+	};
 
 	function addByTeachers( subSet, teacherIds ){
 		teacherIds.forEach( function( id ){
