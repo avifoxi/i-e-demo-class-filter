@@ -23,6 +23,7 @@ var MASTER = function () {
 	init();
 	
 	this.CHEAT = function(){
+		console.log(_fullClasses._embedded['class']);
 		console.log(_subjects);
 		console.log(_grades);
 		console.log(_teachers);

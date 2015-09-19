@@ -9236,6 +9236,7 @@ var MASTER = function () {
 	init();
 	
 	this.CHEAT = function(){
+		console.log(_fullClasses._embedded['class']);
 		console.log(_subjects);
 		console.log(_grades);
 		console.log(_teachers);
@@ -9278,30 +9279,48 @@ window.MASTER = new MASTER();
 'use strict';
 
 function classFilter ( classList, teacherClassMap ) {
-	var _classList = classList._embedded['class'],
-		_teacherClassMap = teacherClassMap;
+	var _classObj = classListToObj( classList._embedded['class'] ) ,
+		_teacherClassMap = teacherClassMap,
+		_gradeClassMap = {},
+		_subjectClassMap = {};
 
+	function classListToObj( classList ) {
+		var classObj = {};
+		classList.forEach(function( klass ){
+			classObj[ klass.id ] = klass;
+		});
+		return classObj;
+	}
 
-	function addByTeachers( subset, teachers ){
+	function addByTeachers( subSet, teacherIds ){
+		teacherIds.forEach( function( id ){
+			var klassId = _teacherClassMap[ id ];
+			subSet[ klassId ] = _classObj[ klassId ];
+		})
+	};
+
+	function addBySubjects( subSet, subjects ){
 
 	};
 
-	function addBySubjects( subset, subjects ){
-
-	};
-
-	function addByGrades( subset, grades ){
+	function addByGrades( subSet, grades ){
 
 	};
 
 
 	return function( args ){
+		console.log( _classObj );
 		var subSet = {},
 			teachers = args.teachers,
 			grades = args.grades,
 			subjects = args.subjects;
 
-		
+		if ( teachers ){
+			addByTeachers( subSet, teachers );
+		}
+		if ( grades ){
+			addByGrades( subSet, grades )
+		}
 
 		return subSet;
 	}
