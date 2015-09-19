@@ -21575,17 +21575,13 @@ var $ = require('jquery'),
 
 var MASTER = function () {
 	var _fullClasses = {}, // full object unparsed
-		_selectCtrl = {},
-		_filter = function(){
-		},
+		_SelectCtrl = {}, // placeholder for dom component
+		_myFilter = function(){}, // placeholder for function
 		_subjects = [],
-		// result of filter action 
+		
+		// result of filter action
 		_currentSubSet = {};
 		
-	
-	this.CHEAT = function(){
-		return _filter;
-	}
 
 	this.init = function(){
 		$.getJSON('./data/subjects.json', function(res){
@@ -21593,15 +21589,26 @@ var MASTER = function () {
 		});
 		$.getJSON('./data/classes.json', function(res){
 			_fullClasses = res._embedded['class'];
-			_filter = new classFilter( _fullClasses, this );
+			_myFilter = new classFilter( _fullClasses, this );
 		}.bind(this));
 	};
 	this.handleFilterables = function( filterables ){
 		$.each(filterables.subjects, function(i, sub){
 			filterables.subjects[ sub ] = _subjects[ sub ];
 		});
-		_selectCtrl = new SelectCtrl( filterables, this );
+		_SelectCtrl = new SelectCtrl( filterables, this );
 	}
+	this.handleFilterChange = function( uiState ){
+		var notEmpty = {}, key;
+		
+		for ( key in uiState ){
+			if ( uiState[ key ].length > 0 ) {
+				notEmpty[ key ] = uiState[ key ];
+			}
+		}
+		var foo = _myFilter( notEmpty );
+		debugger;
+	};
 
 	this.init();
 	
@@ -21611,12 +21618,66 @@ window.MASTER = new MASTER();
 },{"./components/selectCtrl.js":4,"./utils/classFilter.js":5,"jquery":1}],4:[function(require,module,exports){
 'use strict';
 
+var $ = require('jquery');
+var pairs = require('lodash').pairs;
+var without = require('lodash').without;
+
 var selectCtrl = function( filterables, MASTER ) {
-	console.log( filterables );
+
+	var checkTemp = $('#checkboxTemplate').html().trim(),
+		filterableTemp = $('#filterableTemplate').html().trim(),
+		$categories = [],
+		$parent = $('#filters'),
+		_uiState = {};
+
+	render();
+	
+	function render(){
+		var keys = Object.getOwnPropertyNames( filterables );
+		
+		// create category parent
+		$categories = keys.map(function( k ){
+			_uiState[ k ] = [];
+			var $category = $( filterableTemp ).clone();
+			$category.find('h4').text( k );
+			
+			// attach checkbox children 
+			$category.append( renderChecks( k, filterables[ k ] ) );
+			return $category;
+		});
+		// append to dom
+		$parent.find('button').after( $categories );
+		attachListener();
+	};
+	function renderChecks( category, options ){
+		var keyVals = pairs( options );
+		return keyVals.map(function( kv ){
+			var $check = $( checkTemp ).clone();
+			$check.find('input').attr('name', category);
+			$check.find('input').attr('value', kv[ 0 ] );
+			$check.find('span').text( kv[ 1 ] );
+			
+			return $check;
+		});
+	};
+	function attachListener(){
+		$parent.change(function( e ){
+			var add = e.target.checked,
+				key = e.target.name,
+				value = e.target.value;
+
+			if ( add ) {
+				_uiState[ key ].push( value );
+			} else {
+				_uiState[ key ] = without( _uiState[ key ], value );
+			}
+			MASTER.handleFilterChange( _uiState );
+		});
+	};
 }
 
 module.exports = selectCtrl;
-},{}],5:[function(require,module,exports){
+},{"jquery":1,"lodash":2}],5:[function(require,module,exports){
 'use strict';
 
 var intersection = require('lodash').intersection;
@@ -21687,7 +21748,7 @@ function classFilter ( classList, MASTER ) {
 
 	function addByGrades( subSet, grades ){
 		grades.forEach(function( id ){
-			var klassId = _gradeClassMap[ id ];
+			var klassIds = _gradeClassMap[ id ];
 			addIdsToSubset( 'grades', subSet, klassIds );
 		});
 	};

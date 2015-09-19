@@ -68,7 +68,7 @@ function classFilter ( classList, MASTER ) {
 
 	function addByGrades( subSet, grades ){
 		grades.forEach(function( id ){
-			var klassId = _gradeClassMap[ id ];
+			var klassIds = _gradeClassMap[ id ];
 			addIdsToSubset( 'grades', subSet, klassIds );
 		});
 	};

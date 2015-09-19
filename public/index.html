@@ -4,28 +4,49 @@
 	<meta charset="UTF-8">
 	<title>Filter JS App - IE demo</title>
 	
+	<link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" rel="stylesheet" integrity="sha256-MfvZlkHCEqatNoGiOXveE8FIwMzZg4W85qfrfIFBfYc= sha512-dTfge/zgoMYpP7QbHy4gWMEGsbsdZeCXz7irItjcC3sPUFtf0kuFbDz/ixG7ArTxmDjLXDmezHubeNikyKGVyQ==" crossorigin="anonymous">
 </head>
-<body>
-
+<body class="container">
 	
-	<div class="tile tile-background">
-	  <div class="pill-group light">
-	    <div class="pill">CLASS_SUBJECT</div>
-	    <div class="pill">Grade CLASS_GRADE</div>
-	  </div>
+	<nav id="filters">
+		<h2>Filters:</h2>
+		<button id="toggleFilter" class="btn btn-default">Enabled</button>
+		
+	</nav>
 
-	  <div>
-	    <h3 class="light">CLASS_NAME</h3>
-	    <div class="element-description light">CLASS_DESCRIPTION</div>
-	  </div>
+	<main id="classDisplay">
+	</main>
+	
+	<script type="text/template" id="classTemplate">
+		<div class="tile tile-background">
+		  <div class="pill-group light">
+		    <div class="pill">CLASS_SUBJECT</div>
+		    <div class="pill">Grade CLASS_GRADE</div>
+		  </div>
 
-	  <div class="tile-footer">
-	    <h4>Teachers</h4>
-	    <div class="element-description-sm">
-	      CLASS_TEACHER
-	    </div>
-	  </div>
-	</div>
+		  <div>
+		    <h3 class="light">CLASS_NAME</h3>
+		    <div class="element-description light">CLASS_DESCRIPTION</div>
+		  </div>	
+
+		  <div class="tile-footer">
+		    <h4>Teachers</h4>
+		    <div class="element-description-sm">
+		      CLASS_TEACHER
+		    </div>
+		  </div>
+		</div>
+	</script>
+
+	<script type="text/template" id="filterableTemplate">
+		<div>
+			<h4></h4>
+		</div>
+	</script>
+	
+	<script type="text/template" id="checkboxTemplate">
+		<div><input type="checkbox" name="" value=""><span></span></br></div>
+	</script>
 
 
 	<script src="./build/bundle.js"></script>
