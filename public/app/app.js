@@ -1,10 +1,14 @@
+'use strict';
+
 var MASTER = function () {
 	var _fullClasses = {}, // full json unparsed
 
 		// FILTERABLE BY
 		_subjects = [],
 		_grades = [],
-		_teachers = [],
+		_teachers = {}, // obj for access by id
+
+		_teacherClassMap = {},
 
 		// result of filter action 
 		_currentSubSet = {};
@@ -12,7 +16,11 @@ var MASTER = function () {
 	init();
 	
 	this.CHEAT = function(){
-		return _classes;
+		console.log(_subjects);
+		console.log(_grades);
+		console.log(_teachers);
+		console.log(_teacherClassMap);
+		// return _fullClasses;
 	}
 
 	function init(){
@@ -20,12 +28,26 @@ var MASTER = function () {
 			_subjects = res;
 		});
 		$.getJSON('./data/classes.json', function(res){
-			_classes = res;
+			_fullClasses = res;
 			parseTeachersGrades();
 		})
 	};
-	function parseTeachers(){
-		console.log('i parse teachers~')
+	function parseTeachersGrades(){
+		var classList = _fullClasses._embedded['class'];
+		
+		classList.forEach(function(klass){
+			var grade = klass.grade,
+				teacher = klass._embedded;
+
+			if ( _grades.indexOf( grade ) === -1 ){
+				_grades.push( grade );
+			}
+			if ( teacher ){
+				// debugger;
+				_teachers[ teacher.teacher[0].id ] = teacher.teacher;
+				_teacherClassMap[ teacher.teacher[0].id ] = klass.id;
+			}
+		});
 	};
 }
 
