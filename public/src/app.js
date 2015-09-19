@@ -1,16 +1,23 @@
 'use strict';
 
+var $ = require('jquery'),
+	classFilter = require('./utils/classFilter.js');
+
 var MASTER = function () {
-	var _fullClasses = {}, // full json unparsed
+	var _fullClasses = {}, // full object unparsed
 
 		// FILTERABLE BY
 		_subjects = [],
 		_grades = [],
 		_teachers = {}, // obj for access by id
 
+		// for efficient class lookup - does not yet allow teachers w multiple classes though
 		_teacherClassMap = {},
 
-		// result of filter action 
+
+		_filter = function(){
+		},
+		// result of f ilter action 
 		_currentSubSet = {};
 		
 	init();
@@ -20,7 +27,7 @@ var MASTER = function () {
 		console.log(_grades);
 		console.log(_teachers);
 		console.log(_teacherClassMap);
-		// return _fullClasses;
+		return _filter;
 	}
 
 	function init(){
@@ -30,6 +37,7 @@ var MASTER = function () {
 		$.getJSON('./data/classes.json', function(res){
 			_fullClasses = res;
 			parseTeachersGrades();
+			_filter = new classFilter( _fullClasses, _teacherClassMap );
 		})
 	};
 	function parseTeachersGrades(){
@@ -43,13 +51,13 @@ var MASTER = function () {
 				_grades.push( grade );
 			}
 			if ( teacher ){
-				// debugger;
 				_teachers[ teacher.teacher[0].id ] = teacher.teacher;
 				_teacherClassMap[ teacher.teacher[0].id ] = klass.id;
 			}
 		});
 	};
+
 }
 
-
+window.classFilter = classFilter;
 window.MASTER = new MASTER();
