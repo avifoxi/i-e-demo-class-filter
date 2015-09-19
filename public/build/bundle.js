@@ -9214,32 +9214,20 @@ return jQuery;
 'use strict';
 
 var $ = require('jquery'),
-	classFilter = require('./utils/classFilter.js');
+	classFilter = require('./utils/classFilter.js'),
+	SelectCtrl = require('./components/selectCtrl.js');
 
 var MASTER = function () {
 	var _fullClasses = {}, // full object unparsed
-
-		// FILTERABLE BY
-		_subjects = [],
-		_grades = [],
-		_teachers = {}, // obj for access by id
-
-		// for efficient class lookup - does not yet allow teachers w multiple classes though
-		_teacherClassMap = {},
-
-
+		_selectCtrl = {},
 		_filter = function(){
 		},
-		// result of f ilter action 
+		_subjects = [],
+		// result of filter action 
 		_currentSubSet = {};
 		
 	
 	this.CHEAT = function(){
-		console.log(_fullClasses._embedded['class']);
-		console.log(_subjects);
-		console.log(_grades);
-		console.log(_teachers);
-		console.log(_teacherClassMap);
 		return _filter;
 	}
 
@@ -9253,7 +9241,10 @@ var MASTER = function () {
 		}.bind(this));
 	};
 	this.handleFilterables = function( filterables ){
-		console.log( filterables );
+		$.each(filterables.subjects, function(i, sub){
+			filterables.subjects[ sub ] = _subjects[ sub ];
+		});
+		_selectCtrl = new SelectCtrl( filterables, this );
 	}
 
 	this.init();
@@ -9261,7 +9252,15 @@ var MASTER = function () {
 }
 
 window.MASTER = new MASTER();
-},{"./utils/classFilter.js":3,"jquery":1}],3:[function(require,module,exports){
+},{"./components/selectCtrl.js":3,"./utils/classFilter.js":4,"jquery":1}],3:[function(require,module,exports){
+'use strict';
+
+var selectCtrl = function( filterables, MASTER ) {
+	console.log( filterables );
+}
+
+module.exports = selectCtrl;
+},{}],4:[function(require,module,exports){
 'use strict';
 
 function classFilter ( classList, MASTER ) {
@@ -9276,17 +9275,19 @@ function classFilter ( classList, MASTER ) {
 		// classListToObj( classList )
 		// var classList = _fullClasses._embedded['class'];
 		var filterables = {
-			subjects: [],
-			grades: [],
+			subjects: {},
+			grades: {},
 			teachers: []
 		};
+
 		classList.forEach(function(klass){
 			var subject = klass.subject,
 				grade = klass.grade,
 				teacher = klass._embedded;
 
-			filterables.subjects.push( subject );
-			filterables.grades.push( grade );
+			filterables.subjects[ subject ] = subject;
+			filterables.grades[ grade ] = grade;
+			
 			// map to class obj by id
 			_classObj[ klass.id ] = klass;
 
@@ -9299,6 +9300,7 @@ function classFilter ( classList, MASTER ) {
 			// map by teacher id
 			if ( teacher ){
 				filterables.teachers.push({[ teacher.teacher[0].id ]: teacher.teacher[0].name });
+				// this should be more robust to accept teachers with multiple classes -- but for now, is ok!
 				_teacherClassMap[ teacher.teacher[0].id ] = klass.id;
 			}
 			// and subject ids
@@ -9319,13 +9321,24 @@ function classFilter ( classList, MASTER ) {
 	};
 
 	function addBySubjects( subSet, subjects ){
-
+		subjects.forEach(function( id ){
+			var klassIds = _subjectClassMap[ id ];
+			addIdsToSubset( subSet, klassIds );
+		});
 	};
 
 	function addByGrades( subSet, grades ){
-
+		grades.forEach(function( id ){
+			var klassId = _gradeClassMap[ id ];
+			addIdsToSubset( subSet, klassIds );
+		});
 	};
 
+	function addIdsToSubset( subSet, klassIds ){
+		klassIds.forEach(function( kId ){
+			subSet[ kId ] = _classObj[ kId ];
+		});
+	}
 
 	return function( args ){
 		console.log( _classObj );
@@ -9334,11 +9347,18 @@ function classFilter ( classList, MASTER ) {
 			grades = args.grades,
 			subjects = args.subjects;
 
+		if ( !( teachers || grades || subjects ) ){
+			return _classObj;
+		}
+
 		if ( teachers ){
 			addByTeachers( subSet, teachers );
 		}
 		if ( grades ){
-			addByGrades( subSet, grades )
+			addByGrades( subSet, grades );
+		}
+		if ( subjects ) {
+			addBySubjects( subSet, subjects );
 		}
 
 		return subSet;

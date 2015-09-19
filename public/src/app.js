@@ -2,13 +2,14 @@
 
 var $ = require('jquery'),
 	classFilter = require('./utils/classFilter.js'),
-	selectCtrl = require('./components/selectCtrl.js');
+	SelectCtrl = require('./components/selectCtrl.js');
 
 var MASTER = function () {
 	var _fullClasses = {}, // full object unparsed
 		_selectCtrl = {},
 		_filter = function(){
 		},
+		_subjects = [],
 		// result of filter action 
 		_currentSubSet = {};
 		
@@ -27,7 +28,10 @@ var MASTER = function () {
 		}.bind(this));
 	};
 	this.handleFilterables = function( filterables ){
-		console.log( filterables );
+		$.each(filterables.subjects, function(i, sub){
+			filterables.subjects[ sub ] = _subjects[ sub ];
+		});
+		_selectCtrl = new SelectCtrl( filterables, this );
 	}
 
 	this.init();

@@ -12,17 +12,19 @@ function classFilter ( classList, MASTER ) {
 		// classListToObj( classList )
 		// var classList = _fullClasses._embedded['class'];
 		var filterables = {
-			subjects: [],
-			grades: [],
+			subjects: {},
+			grades: {},
 			teachers: []
 		};
+
 		classList.forEach(function(klass){
 			var subject = klass.subject,
 				grade = klass.grade,
 				teacher = klass._embedded;
 
-			filterables.subjects.push( subject );
-			filterables.grades.push( grade );
+			filterables.subjects[ subject ] = subject;
+			filterables.grades[ grade ] = grade;
+			
 			// map to class obj by id
 			_classObj[ klass.id ] = klass;
 
@@ -35,6 +37,7 @@ function classFilter ( classList, MASTER ) {
 			// map by teacher id
 			if ( teacher ){
 				filterables.teachers.push({[ teacher.teacher[0].id ]: teacher.teacher[0].name });
+				// this should be more robust to accept teachers with multiple classes -- but for now, is ok!
 				_teacherClassMap[ teacher.teacher[0].id ] = klass.id;
 			}
 			// and subject ids
@@ -55,13 +58,24 @@ function classFilter ( classList, MASTER ) {
 	};
 
 	function addBySubjects( subSet, subjects ){
-
+		subjects.forEach(function( id ){
+			var klassIds = _subjectClassMap[ id ];
+			addIdsToSubset( subSet, klassIds );
+		});
 	};
 
 	function addByGrades( subSet, grades ){
-
+		grades.forEach(function( id ){
+			var klassId = _gradeClassMap[ id ];
+			addIdsToSubset( subSet, klassIds );
+		});
 	};
 
+	function addIdsToSubset( subSet, klassIds ){
+		klassIds.forEach(function( kId ){
+			subSet[ kId ] = _classObj[ kId ];
+		});
+	}
 
 	return function( args ){
 		console.log( _classObj );
@@ -70,11 +84,18 @@ function classFilter ( classList, MASTER ) {
 			grades = args.grades,
 			subjects = args.subjects;
 
+		if ( !( teachers || grades || subjects ) ){
+			return _classObj;
+		}
+
 		if ( teachers ){
 			addByTeachers( subSet, teachers );
 		}
 		if ( grades ){
-			addByGrades( subSet, grades )
+			addByGrades( subSet, grades );
+		}
+		if ( subjects ) {
+			addBySubjects( subSet, subjects );
 		}
 
 		return subSet;
