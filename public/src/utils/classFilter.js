@@ -1,5 +1,7 @@
 'use strict';
 
+var intersection = require('lodash').intersection;
+
 function classFilter ( classList, MASTER ) {
 	var _classObj = {},
 		_teacherClassMap = {},
@@ -14,7 +16,7 @@ function classFilter ( classList, MASTER ) {
 		var filterables = {
 			subjects: {},
 			grades: {},
-			teachers: []
+			teachers: {}
 		};
 
 		classList.forEach(function(klass){
@@ -36,7 +38,7 @@ function classFilter ( classList, MASTER ) {
 			}
 			// map by teacher id
 			if ( teacher ){
-				filterables.teachers.push({[ teacher.teacher[0].id ]: teacher.teacher[0].name });
+				filterables.teachers[ teacher.teacher[0].id ] = teacher.teacher[0].name;
 				// this should be more robust to accept teachers with multiple classes -- but for now, is ok!
 				_teacherClassMap[ teacher.teacher[0].id ] = klass.id;
 			}
@@ -53,40 +55,64 @@ function classFilter ( classList, MASTER ) {
 	function addByTeachers( subSet, teacherIds ){
 		teacherIds.forEach( function( id ){
 			var klassId = _teacherClassMap[ id ];
-			subSet[ klassId ] = _classObj[ klassId ];
+			subSet.teachers.push( klassId );
 		})
 	};
 
 	function addBySubjects( subSet, subjects ){
 		subjects.forEach(function( id ){
 			var klassIds = _subjectClassMap[ id ];
-			addIdsToSubset( subSet, klassIds );
+			addIdsToSubset( 'subjects', subSet, klassIds );
 		});
 	};
 
 	function addByGrades( subSet, grades ){
 		grades.forEach(function( id ){
 			var klassId = _gradeClassMap[ id ];
-			addIdsToSubset( subSet, klassIds );
+			addIdsToSubset( 'grades', subSet, klassIds );
 		});
 	};
 
-	function addIdsToSubset( subSet, klassIds ){
+	function addIdsToSubset( key, subSet, klassIds ){
 		klassIds.forEach(function( kId ){
-			subSet[ kId ] = _classObj[ kId ];
+			subSet[ key ].push( kId );
 		});
-	}
+	};
+
+	function keysToSubset( subSet, args ){
+		var keys = Object.getOwnPropertyNames( args );
+		keys.forEach(function( k ){
+			subSet[ k ] = [];
+		});
+		return keys;
+	};
+
+	function reduceToShared( subSet, keys ){
+		var distincts, shared; 
+		
+		distincts = keys.map(function(k){
+			return subSet[k];
+		});
+		shared = intersection( distincts );
+		
+		return shared.map(function(id){
+			return _classObj[ id ];
+		});
+	};
 
 	return function( args ){
 		console.log( _classObj );
 		var subSet = {},
 			teachers = args.teachers,
 			grades = args.grades,
-			subjects = args.subjects;
+			subjects = args.subjects,
+			keys;
 
 		if ( !( teachers || grades || subjects ) ){
 			return _classObj;
 		}
+
+		keys = keysToSubset( subSet, args );
 
 		if ( teachers ){
 			addByTeachers( subSet, teachers );
@@ -98,7 +124,7 @@ function classFilter ( classList, MASTER ) {
 			addBySubjects( subSet, subjects );
 		}
 
-		return subSet;
+		return reduceToShared( subSet, keys );
 	}
 }
 
