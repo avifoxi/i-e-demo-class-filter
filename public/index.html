@@ -10,6 +10,7 @@
 	
 	<nav id="filters">
 		<h2>Filters:</h2>
+		<!-- TODO - add toggle for filter, not yet functional -->
 		<button id="toggleFilter" class="btn btn-default">Enabled</button>
 		
 	</nav>
@@ -20,19 +21,18 @@
 	<script type="text/template" id="classTemplate">
 		<div class="tile tile-background">
 		  <div class="pill-group light">
-		    <div class="pill">CLASS_SUBJECT</div>
-		    <div class="pill">Grade CLASS_GRADE</div>
+		    <div class="pill">Subject: <span class="subject"></span></div>
+		    <div class="pill">Grade <%= grade %></div>
 		  </div>
 
 		  <div>
-		    <h3 class="light">CLASS_NAME</h3>
-		    <div class="element-description light">CLASS_DESCRIPTION</div>
+		    <h3 class="light"><%= name %></h3>
+		    <div class="element-description light"><%= description %></div>
 		  </div>	
 
 		  <div class="tile-footer">
 		    <h4>Teachers</h4>
 		    <div class="element-description-sm">
-		      CLASS_TEACHER
 		    </div>
 		  </div>
 		</div>

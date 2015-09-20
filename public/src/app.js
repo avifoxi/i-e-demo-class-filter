@@ -2,11 +2,16 @@
 
 var $ = require('jquery'),
 	classFilter = require('./utils/classFilter.js'),
-	SelectCtrl = require('./components/selectCtrl.js');
+	SelectCtrl = require('./components/selectCtrl.js'),
+	ClassesCtrl = require('./components/classesCtrl.js');
 
 var MASTER = function () {
 	var _fullClasses = {}, // full object unparsed
-		_SelectCtrl = {}, // placeholder for dom component
+		
+		// placeholders for dom component
+		_SelectCtrl = {},
+		_ClassesCtrl = {},
+
 		_myFilter = function(){}, // placeholder for function
 		_subjects = [],
 		
@@ -28,6 +33,7 @@ var MASTER = function () {
 			filterables.subjects[ sub ] = _subjects[ sub ];
 		});
 		_SelectCtrl = new SelectCtrl( filterables, this );
+		_ClassesCtrl = new ClassesCtrl( _fullClasses, _subjects );
 	}
 	this.handleFilterChange = function( uiState ){
 		var notEmpty = {}, key;

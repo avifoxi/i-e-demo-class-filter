@@ -94,14 +94,14 @@ function classFilter ( classList, MASTER ) {
 			return subSet[k];
 		});
 		shared = intersection( distincts );
-		
+		debugger;
 		return shared.map(function(id){
 			return _classObj[ id ];
 		});
 	};
 
 	return function( args ){
-		console.log( _classObj );
+
 		var subSet = {},
 			teachers = args.teachers,
 			grades = args.grades,
@@ -109,7 +109,8 @@ function classFilter ( classList, MASTER ) {
 			keys;
 
 		if ( !( teachers || grades || subjects ) ){
-			return _classObj;
+			// argument passed in at top of declaration
+			return classList;
 		}
 
 		keys = keysToSubset( subSet, args );

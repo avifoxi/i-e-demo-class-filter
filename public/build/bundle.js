@@ -21571,11 +21571,16 @@ return jQuery;
 
 var $ = require('jquery'),
 	classFilter = require('./utils/classFilter.js'),
-	SelectCtrl = require('./components/selectCtrl.js');
+	SelectCtrl = require('./components/selectCtrl.js'),
+	ClassesCtrl = require('./components/classesCtrl.js');
 
 var MASTER = function () {
 	var _fullClasses = {}, // full object unparsed
-		_SelectCtrl = {}, // placeholder for dom component
+		
+		// placeholders for dom component
+		_SelectCtrl = {},
+		_ClassesCtrl = {},
+
 		_myFilter = function(){}, // placeholder for function
 		_subjects = [],
 		
@@ -21597,6 +21602,7 @@ var MASTER = function () {
 			filterables.subjects[ sub ] = _subjects[ sub ];
 		});
 		_SelectCtrl = new SelectCtrl( filterables, this );
+		_ClassesCtrl = new ClassesCtrl( _fullClasses, _subjects );
 	}
 	this.handleFilterChange = function( uiState ){
 		var notEmpty = {}, key;
@@ -21615,7 +21621,40 @@ var MASTER = function () {
 }
 
 window.MASTER = new MASTER();
-},{"./components/selectCtrl.js":4,"./utils/classFilter.js":5,"jquery":1}],4:[function(require,module,exports){
+},{"./components/classesCtrl.js":4,"./components/selectCtrl.js":5,"./utils/classFilter.js":6,"jquery":1}],4:[function(require,module,exports){
+'use strict';
+
+var $ = require('jquery');
+var template = require('lodash').template;
+
+var ClassesCtrl = function( classList, subjects ) {
+	var $parent = $('#classDisplay'),
+		myTemp = template( $('#classTemplate').html().trim() );
+
+	render( classList );
+	
+	function render( subSet ){
+		var $klasses = subSet.map(function( klass ){
+			var $klass = $( myTemp( klass ) );
+			
+			$klass.data( 'klassId', klass.id );
+
+			// resolve subject by index
+			$klass.find('.subject').text( subjects[ klass.subject ] );
+
+			// if teacher assigned
+			if ( klass._embedded ) {
+				$klass.find('.element-description-sm')
+					.text( klass._embedded.teacher[0].name );
+			}
+			return $klass;
+		});
+		$parent.append( $klasses );
+	}
+}
+
+module.exports = ClassesCtrl;
+},{"jquery":1,"lodash":2}],5:[function(require,module,exports){
 'use strict';
 
 var $ = require('jquery');
@@ -21677,7 +21716,7 @@ var selectCtrl = function( filterables, MASTER ) {
 }
 
 module.exports = selectCtrl;
-},{"jquery":1,"lodash":2}],5:[function(require,module,exports){
+},{"jquery":1,"lodash":2}],6:[function(require,module,exports){
 'use strict';
 
 var intersection = require('lodash').intersection;
@@ -21774,14 +21813,14 @@ function classFilter ( classList, MASTER ) {
 			return subSet[k];
 		});
 		shared = intersection( distincts );
-		
+		debugger;
 		return shared.map(function(id){
 			return _classObj[ id ];
 		});
 	};
 
 	return function( args ){
-		console.log( _classObj );
+
 		var subSet = {},
 			teachers = args.teachers,
 			grades = args.grades,
@@ -21789,7 +21828,8 @@ function classFilter ( classList, MASTER ) {
 			keys;
 
 		if ( !( teachers || grades || subjects ) ){
-			return _classObj;
+			// argument passed in at top of declaration
+			return classList;
 		}
 
 		keys = keysToSubset( subSet, args );
