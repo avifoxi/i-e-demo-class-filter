@@ -21813,7 +21813,7 @@ function classFilter ( classList, MASTER ) {
 			return subSet[k];
 		});
 		shared = intersection( distincts );
-		debugger;
+		
 		return shared.map(function(id){
 			return _classObj[ id ];
 		});
