@@ -43,8 +43,8 @@ var MASTER = function () {
 				notEmpty[ key ] = uiState[ key ];
 			}
 		}
-		var foo = _myFilter( notEmpty );
-		debugger;
+		_currentSubSet = _myFilter( notEmpty );
+		// pass updated subSet to _ClassesCtrl, and re-render TODO 
 	};
 
 	this.init();
